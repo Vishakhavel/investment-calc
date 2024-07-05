@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // import { style } from './style';
 // import styled from 'styled-components';
 import './InvestmentCalc.css';
@@ -33,6 +33,9 @@ const InvestmentCalculator = () => {
   const [yearsToGrow, setYearsToGrow] = useState(30);
   const [annualReturn, setAnnualReturn] = useState(8);
 
+  let adjustedContributions = contributions === '' ? 0 : Number(contributions),
+    adjustedInitialDeposit = initialDeposit === '' ? 0 : Number(initialDeposit);
+
   const calculateFutureBalance = () => {
     const n =
       contributionFrequency === 'weekly'
@@ -42,11 +45,16 @@ const InvestmentCalculator = () => {
         : 1;
     const r = annualReturn / 100 / n;
     const t = yearsToGrow * n;
-    let futureBalance = initialDeposit * Math.pow(1 + r, t);
+    let futureBalance = adjustedInitialDeposit * Math.pow(1 + r, t);
     for (let i = 1; i <= t; i++) {
-      futureBalance += contributions * Math.pow(1 + r, t - i);
+      futureBalance += adjustedContributions * Math.pow(1 + r, t - i);
     }
-    return futureBalance.toFixed(2);
+    console.log({
+      futureBalance,
+      adjustedContributions,
+      adjustedInitialDeposit,
+    });
+    return Math.floor(futureBalance);
   };
 
   const generateChartData = () => {
@@ -70,23 +78,32 @@ const InvestmentCalculator = () => {
     }
     const r = annualReturn / 100 / n;
     const t = yearsToGrow * n;
-    let balance = initialDeposit;
+    let balance = adjustedInitialDeposit;
     const data = [];
     for (let i = 1; i <= t; i++) {
-      balance = balance * (1 + r) + contributions;
+      let amount = balance * (1 + r) + adjustedContributions;
+      let interest = amount - balance;
+      balance = balance * (1 + r) + adjustedContributions;
       if (i % n === 0) {
-        data.push({ year: 2024 + Math.floor(i / n), balance: balance });
+        data.push({
+          year: 2024 + Math.floor(i / n),
+          amount: Math.floor(amount),
+          interest: Math.floor(interest),
+          random: 2,
+        });
       }
     }
     return data;
   };
 
-  const barChartOptions = {
-    grid: {
-      horizontal: true,
-      vertical: false,
-    },
-  };
+  console.log('generateChartData', generateChartData());
+
+  // const barChartOptions = {
+  //   grid: {
+  //     horizontal: true,
+  //     vertical: false,
+  //   },
+  // };
 
   const CustomizedLabel = (props) => (
     <Box {...props}>
@@ -130,7 +147,7 @@ const InvestmentCalculator = () => {
           <TextField
             type='number'
             value={initialDeposit}
-            onChange={(e) => setInitialDeposit(Number(e.target.value))}
+            onChange={(e) => setInitialDeposit(e.target.value)}
             // fullWidth
             margin='normal'
           />
@@ -140,7 +157,7 @@ const InvestmentCalculator = () => {
           <TextField
             type='number'
             value={contributions}
-            onChange={(e) => setContributions(Number(e.target.value))}
+            onChange={(e) => setContributions(e.target.value)}
             // fullWidth
             margin='normal'
           />
@@ -233,17 +250,16 @@ const InvestmentCalculator = () => {
             width={800}
             height={400}
             data={generateChartData()}
-            {...barChartOptions}
+            // {...barChartOptions}
           >
-            {/* displays the grid lines. */}
-            {/* fill='#F6DA0D' */}
-            <CartesianGrid vertical={false} stroke='green' />
+            {/* <CartesianGrid vertical={false} stroke='green' /> */}
             <XAxis dataKey='year' />
             {/* the graph should move to the right if the number gets huge on the Y axis. handle this. */}
             <YAxis />
             <Tooltip />
-            {/* <Legend /> */}
-            <Bar dataKey='balance' label={<CustomizedLabel />} fill='#82ca9d' />
+            <Legend />
+            <Bar dataKey='amount' stackId='a' fill='#82ca9d' />
+            <Bar dataKey='random' stackId='a' fill='red' />
           </BarChart>
         </Stack>
       </Box>
