@@ -24,6 +24,10 @@ import {
   Legend,
 } from 'recharts';
 import { styled } from '@mui/system';
+import { grey } from '@mui/material/colors';
+import { ThemeProvider } from '@mui/material/styles';
+
+import SwipeTextField from './atom/SwipeTextField';
 
 // const StyledDiv = styled.div`
 //   ${style}
@@ -31,6 +35,7 @@ import { styled } from '@mui/system';
 
 const CustomSlider = styled(Slider)({
   height: 8,
+  color: '#2c2c6e', // Color for the track
   '& .MuiSlider-thumb': {
     height: 30,
     width: 30,
@@ -43,13 +48,41 @@ const CustomSlider = styled(Slider)({
   },
   '& .MuiSlider-track': {
     border: 'none',
-    backgroundColor: '#76c7c0',
+    backgroundColor: '#2c2c6e',
   },
   '& .MuiSlider-rail': {
     opacity: 1,
     backgroundColor: '#e0e0e0',
   },
+  // '& .MuiSlider-valueLabel': {
+  //   left: 'calc(-50% + 12px)',
+  //   top: 30,
+  //   '& *': {
+  //     background: 'transparent',
+  //     color: '#2c2c6e', // Color for the value label
+  //   },
+  // },
 });
+
+// const CustomTextField = styled(TextField)({
+//   '& .MuiInputBase-root': {
+//     backgroundColor: '#F9D46D', // Light yellow background color
+//     borderRadius: '5px', // Rounded corners
+//     // padding: '10px', // Padding inside the input
+//   },
+//   '& .MuiInputBase-input': {
+//     textAlign: 'center', // Center the text
+//     fontSize: '1.5em', // Increase font size
+//     fontWeight: 'bold', // Make the text bold
+//     color: '#2C3E50', // Text color
+//   },
+//   '& .MuiOutlinedInput-notchedOutline': {
+//     borderColor: '#F9D46D', // Border color
+//   },
+//   '& .MuiSvgIcon-root': {
+//     color: '#2C3E50', // Icon color
+//   },
+// });
 const InvestmentCalculator = () => {
   const [initialDeposit, setInitialDeposit] = useState(3000);
   const [contributions, setContributions] = useState(200);
@@ -161,12 +194,17 @@ const InvestmentCalculator = () => {
     // <StyledDiv>
     <Box sx={{ p: 4 }} className='main-box'>
       <Typography
-        className='text-centre'
-        variant='h4'
-        sx={{ display: 'flex', justifyContent: 'center' }}
+        className='text-centre main-heading'
+        variant='h3'
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          fontFamily: 'Caudex, Arial, sans-serif',
+          fontWeight: 700,
+        }}
         gutterBottom
       >
-        Investment Calculator
+        Savings & Investment Calculator
       </Typography>
 
       {/* content start */}
@@ -183,13 +221,24 @@ const InvestmentCalculator = () => {
           sx={{
             display: 'flex',
             flexDirection: 'col',
-            width: '15%',
+            // width: '15%',
           }}
+          className='left-stack'
         >
           <Typography className='capital heading-text'>
-            Initial Deposit
+            Initial Investment Deposit
           </Typography>
-          <TextField
+          {/* <TextField
+            type='number'
+            value={initialDeposit}
+            onChange={(e) => setInitialDeposit(e.target.value)}
+            // fullWidth
+            margin='normal'
+          /> */}
+          {/* <CustomTextField */}
+          <SwipeTextField
+            className='field-input'
+            symbol='$'
             type='number'
             value={initialDeposit}
             onChange={(e) => setInitialDeposit(e.target.value)}
@@ -199,7 +248,16 @@ const InvestmentCalculator = () => {
           <Typography className='capital heading-text'>
             Contributions
           </Typography>
-          <TextField
+          {/* <TextField
+            type='number'
+            value={contributions}
+            onChange={(e) => setContributions(e.target.value)}
+            // fullWidth
+            margin='normal'
+          /> */}
+          <SwipeTextField
+            className='field-input'
+            symbol='$'
             type='number'
             value={contributions}
             onChange={(e) => setContributions(e.target.value)}
@@ -244,18 +302,9 @@ const InvestmentCalculator = () => {
             </Box>
           </RadioGroup>
           <Typography gutterBottom className='heading-text capital'>
-            Years to Grow - {yearsToGrow} years
+            {yearsToGrow} Years to Grow
           </Typography>
-          {/* <Slider
-            value={yearsToGrow}
-            onChange={(e, newValue) => setYearsToGrow(newValue)}
-            valueLabelDisplay='auto'
-            step={1}
-            min={1}
-            max={50}
-            size='small'
-            color='secondary'
-          /> */}
+
           <CustomSlider
             value={yearsToGrow}
             onChange={(e, newValue) => setYearsToGrow(newValue)}
@@ -267,9 +316,24 @@ const InvestmentCalculator = () => {
             color='secondary'
           />
           <Typography className='capital heading-text'>
-            Average Annual Return (%)
+            Average Annual Return
           </Typography>
-          <TextField
+          {/* <TextField
+            type='number'
+            maxLength='2'
+            value={annualReturn}
+            onChange={(e) => setAnnualReturn(e.target.value)}
+            // fullWidth
+            margin='normal'
+            inputProps={{
+              maxLength: 10,
+              placeholder: '8%',
+              defaultValue: '8%',
+            }}
+          /> */}
+          <SwipeTextField
+            // symbol
+            className='field-input'
             type='number'
             maxLength='2'
             value={annualReturn}
@@ -285,22 +349,26 @@ const InvestmentCalculator = () => {
         </Stack>
 
         {/* right section */}
-        <Stack sx={{ marginLeft: 10 }}>
-          <Typography
-            variant='h5'
-            className='capital text-center heading-text'
-            gutterBottom
-          >
-            Potential Future Balance:
-          </Typography>
-          <Typography
-            variant='h2'
-            className='capital text-center heading-text'
-            gutterBottom
-            fontWeight='bold'
-          >
-            ${calculateFutureBalance()}
-          </Typography>
+        <Stack sx={{ marginLeft: 10 }} className='right-stack'>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography
+              variant='h6'
+              // className='capital text-center heading-text'
+              className='capital heading-text'
+              gutterBottom
+            >
+              Potential Future Balance in {yearsToGrow} years
+            </Typography>
+            <Typography
+              variant='h3'
+              className='capital text-center heading-text'
+              gutterBottom
+              fontWeight='bold'
+            >
+              ${calculateFutureBalance()}
+            </Typography>
+          </Box>
+
           <BarChart
             width={800}
             height={400}
@@ -313,8 +381,8 @@ const InvestmentCalculator = () => {
             <YAxis />
             <Tooltip />
             <Legend />
-            <Bar dataKey='amount' stackId='a' fill='#8884d8' />
-            <Bar dataKey='interest' stackId='a' fill='#82ca9d' />
+            <Bar dataKey='amount' stackId='a' fill='#293A60' />
+            <Bar dataKey='interest' stackId='a' fill='#FBC950' />
           </BarChart>
         </Stack>
       </Box>
