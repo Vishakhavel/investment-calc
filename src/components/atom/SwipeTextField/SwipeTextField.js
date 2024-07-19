@@ -24,16 +24,22 @@ const CustomTextField = styled(TextField)({
   },
 });
 
-const SwipeTextField = ({ symbol = '', ...props }) => {
+const SwipeTextField = ({ symbol = '', max = 100, min = 0, ...props }) => {
+  console.log({ max, min });
   return (
     <CustomTextField
+      type='number'
       InputProps={{
         startAdornment: (
           <InputAdornment position='start'>{symbol}</InputAdornment>
         ),
+        min: 0,
+        max: 100,
       }}
       variant='outlined'
+      inputProps={{ max: 100, min: 0 }}
       {...props}
+      // inputProps={{ min: 0, max: 100 }}
     />
   );
 };
