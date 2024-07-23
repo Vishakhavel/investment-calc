@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 // import { style } from './style';
 // import styled from 'styled-components';
-import './InvestmentCalc.css';
-import swipeSwipeImage from '../assets/swipeswipe_logo.png';
+import "./InvestmentCalc.css";
+import swipeSwipeImage from "../assets/swipeswipe_logo.png";
 
 import {
   TextField,
@@ -13,7 +13,7 @@ import {
   Typography,
   Box,
   Stack,
-} from '@mui/material';
+} from "@mui/material";
 import {
   BarChart,
   Bar,
@@ -22,33 +22,33 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-} from 'recharts';
-import { styled } from '@mui/system';
-import { grey } from '@mui/material/colors';
-import { ThemeProvider } from '@mui/material/styles';
+} from "recharts";
+import { styled } from "@mui/system";
+import { grey } from "@mui/material/colors";
+import { ThemeProvider } from "@mui/material/styles";
 
-import SwipeTextField from './atom/SwipeTextField';
+import SwipeTextField from "./atom/SwipeTextField";
 
 const CustomSlider = styled(Slider)({
   height: 8,
-  color: '#2c2c6e', // Color for the track
-  '& .MuiSlider-thumb': {
+  color: "#2c2c6e", // Color for the track
+  "& .MuiSlider-thumb": {
     height: 30,
     width: 30,
     backgroundImage: `url(${swipeSwipeImage})`,
-    backgroundSize: 'cover',
-    border: 'none',
-    '&:focus, &:hover, &.Mui-active': {
-      boxShadow: 'inherit',
+    backgroundSize: "cover",
+    border: "none",
+    "&:focus, &:hover, &.Mui-active": {
+      boxShadow: "inherit",
     },
   },
-  '& .MuiSlider-track': {
-    border: 'none',
-    backgroundColor: '#2c2c6e',
+  "& .MuiSlider-track": {
+    border: "none",
+    backgroundColor: "#2c2c6e",
   },
-  '& .MuiSlider-rail': {
+  "& .MuiSlider-rail": {
     opacity: 1,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: "#e0e0e0",
   },
   // '& .MuiSlider-valueLabel': {
   //   left: 'calc(-50% + 12px)',
@@ -63,19 +63,19 @@ const CustomSlider = styled(Slider)({
 const InvestmentCalculator = () => {
   const [initialDeposit, setInitialDeposit] = useState(3000);
   const [contributions, setContributions] = useState(200);
-  const [contributionFrequency, setContributionFrequency] = useState('weekly');
+  const [contributionFrequency, setContributionFrequency] = useState("weekly");
   const [yearsToGrow, setYearsToGrow] = useState(30);
   const [annualReturn, setAnnualReturn] = useState(8);
 
-  let adjustedContributions = contributions === '' ? 0 : Number(contributions),
-    adjustedInitialDeposit = initialDeposit === '' ? 0 : Number(initialDeposit),
-    adjustedAnnualReturn = initialDeposit === '' ? 0 : Number(annualReturn);
+  let adjustedContributions = contributions === "" ? 0 : Number(contributions),
+    adjustedInitialDeposit = initialDeposit === "" ? 0 : Number(initialDeposit),
+    adjustedAnnualReturn = initialDeposit === "" ? 0 : Number(annualReturn);
 
   const calculateFutureBalance = () => {
     const n =
-      contributionFrequency === 'weekly'
+      contributionFrequency === "weekly"
         ? 52
-        : contributionFrequency === 'monthly'
+        : contributionFrequency === "monthly"
         ? 12
         : 1;
     const r = adjustedAnnualReturn / 100 / n;
@@ -92,155 +92,73 @@ const InvestmentCalculator = () => {
     return Math.floor(futureBalance);
   };
 
-  // const generateChartData = () => [
-  //   { year: '2024', amount: 1000, interest: 0 },
-  //   { year: '2025', amount: 2000, interest: 100 },
-  //   { year: '2026', amount: 3000, interest: 300 },
-  //   { year: '2027', amount: 4000, interest: 600 },
-  //   { year: '2028', amount: 5000, interest: 1000 },
-  //   { year: '2029', amount: 6000, interest: 1500 },
-  //   { year: '2030', amount: 7000, interest: 2100 },
-  //   { year: '2031', amount: 8000, interest: 2800 },
-  //   { year: '2032', amount: 9000, interest: 3600 },
-  //   { year: '2033', amount: 10000, interest: 4500 },
-  //   { year: '2034', amount: 11000, interest: 5500 },
-  //   { year: '2035', amount: 12000, interest: 6600 },
-  //   { year: '2036', amount: 12580, interest: 8608 },
-  //   { year: '2037', amount: 14000, interest: 9800 },
-  //   { year: '2038', amount: 15000, interest: 11100 },
-  //   { year: '2039', amount: 16000, interest: 12500 },
-  //   { year: '2040', amount: 17000, interest: 14000 },
-  //   { year: '2041', amount: 18000, interest: 15600 },
-  //   { year: '2042', amount: 19000, interest: 17300 },
-  //   { year: '2043', amount: 20000, interest: 19100 },
-  //   { year: '2044', amount: 21000, interest: 21000 },
-  // ];
+  const generateChartData = useMemo(() => {
+    const rate = annualReturn / 100;
 
-  // const generateChartData = () => {
-  //   let n;
-  //   switch (contributionFrequency) {
-  //     case 'daily':
-  //       n = 365;
-  //       break;
-  //     case 'weekly':
-  //       n = 52;
-  //       break;
-  //     case 'monthly':
-  //       n = 12;
-  //       break;
-  //     case 'yearly':
-  //       n = 1;
-  //       break;
-  //     default:
-  //       // let the default case be weekly
-  //       n = 52;
-  //   }
-
-  //   const r = annualReturn / 100 / n;
-  //   const t = yearsToGrow * n;
-
-  //   // balance is too big compared to the interest
-  //   let balance = adjustedInitialDeposit;
-  //   const data = [];
-
-  //   for (let i = 1; i <= t; i++) {
-  //     let newBalance = balance * (1 + r) + adjustedContributions;
-  //     let interest = newBalance - balance - adjustedContributions;
-  //     balance = newBalance;
-
-  //     // push only when the amount calculated is for the entire year
-  //     console.log('i mod n', i % n, i, n);
-  //     if (i % n === 0) {
-  //       data.push({
-  //         year: 2024 + Math.floor(i / n),
-  //         amount: Math.floor(balance),
-  //         interest: Math.floor(interest),
-  //       });
-  //     }
-  //   }
-
-  //   return data;
-  // };
-
-  // function generateChartData(P, r, t, PMT, contributionFrequency) {
-  function generateChartData(P, r, t, PMT, contributionFrequency) {
     let n;
     switch (contributionFrequency) {
-      case 'daily':
+      case "daily":
         n = 365;
         break;
-      case 'weekly':
+      case "weekly":
         n = 52;
         break;
-      case 'monthly':
+      case "monthly":
         n = 12;
         break;
-      case 'yearly':
+      case "yearly":
         n = 1;
         break;
       default:
-        // throw new Error(
-        //   'Invalid interval. Choose daily, weekly, monthly, or yearly.'
-        // );
-        n = 1;
+        throw new Error(
+          'Invalid compounding frequency. Choose from "daily", "weekly", "monthly", or "yearly".'
+        );
     }
 
-    const interestRate = adjustedAnnualReturn / 100; // Convert percentage to decimal
-    let yearlyData = [];
+    const yearlyAmounts = [];
+    let totalAmount = initialDeposit;
+    let previousAmount = initialDeposit;
 
-    let currentPrincipal = adjustedInitialDeposit;
-    let totalContributions = 0;
+    const currentYear = new Date().getFullYear();
+
+    let checkData = [];
 
     for (let year = 1; year <= yearsToGrow; year++) {
-      totalContributions += adjustedContributions * n;
-      const futureValueWithoutContributions =
-        currentPrincipal * Math.pow(1 + interestRate / n, n);
-      const futureValueWithContributions =
-        (totalContributions * (Math.pow(1 + interestRate / n, n * year) - 1)) /
-        (interestRate / n);
-
-      const futureValue =
-        futureValueWithoutContributions + futureValueWithContributions;
-
-      const interestEarned =
-        futureValue - currentPrincipal - totalContributions;
-
-      yearlyData.push({
-        year: 2024 + year,
-        amount: Math.floor(currentPrincipal + totalContributions),
-        interest: Math.floor(interestEarned),
-        totalValue: Math.floor(futureValue),
-        interestDisplayValue:
-          Math.floor(interestEarned).toLocaleString('en-US'),
-        amountDisplayValue: Math.floor(
-          currentPrincipal + totalContributions
-        ).toLocaleString('en-US'),
+      for (let i = 1; i <= n; i++) {
+        totalAmount = totalAmount * (1 + rate / n) + Number(contributions);
+      }
+      const interestEarned = totalAmount - previousAmount - contributions * n;
+      checkData.push({
+        interestEarned,
+        totalAmount,
+        previousAmount,
+        contributions,
       });
-
-      // if (i % n === 0) {
-      //   yearlyData.push({
-      //     year: 2024 + Math.floor(i / n),
-      //     amount: Math.floor(balance),
-      //     interest: Math.floor(interest),
-      //   });
-      // }
-
-      currentPrincipal = futureValue;
+      console.log();
+      yearlyAmounts.push({
+        // year: year,
+        year: Number(currentYear) + year,
+        amount: Math.floor(totalAmount),
+        interest: Math.floor(interestEarned),
+      });
+      previousAmount = totalAmount;
     }
-    return yearlyData;
-  }
 
-  console.log('chart data', generateChartData());
+    console.log({ checkData });
 
-  // const CustomizedLabel = (props) => (
-  //   <Box {...props}>
-  //     Return: ${props.return}
-  //     Investment: ${props.investment}
-  //   </Box>
-  // );
+    return yearlyAmounts;
+  }, [
+    initialDeposit,
+    contributions,
+    contributionFrequency,
+    yearsToGrow,
+    annualReturn,
+  ]);
+
+  console.log("chart data", generateChartData);
 
   const handleInitialDepositChange = (e) => {
-    if (Number(e.target.value) < 99999999) {
+    if (Number(e.target.value) <= 999999) {
       setInitialDeposit(e.target.value);
     }
   };
@@ -250,9 +168,20 @@ const InvestmentCalculator = () => {
     }
   };
   const handleContributionChange = (e) => {
-    if (Number(e.target.value) < 99999) {
+    if (Number(e.target.value) <= 99999) {
       setContributions(e.target.value);
     }
+  };
+
+  console.log({ annualReturn, initialDeposit, contributions, yearsToGrow });
+
+  const formatAxisText = (value) => {
+    if (value >= 1e6) {
+      return (value / 1e6).toFixed(1) + "M";
+    } else if (value >= 1e3) {
+      return (value / 1e3).toFixed(1) + "k";
+    }
+    return value.toString();
   };
 
   return (
@@ -262,9 +191,9 @@ const InvestmentCalculator = () => {
         className='text-centre main-heading'
         variant='h3'
         sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          fontFamily: 'Caudex, Arial, sans-serif',
+          display: "flex",
+          justifyContent: "center",
+          fontFamily: "Caudex, Arial, sans-serif",
           fontWeight: 700,
         }}
         gutterBottom
@@ -275,17 +204,18 @@ const InvestmentCalculator = () => {
       {/* content start */}
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'center',
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
           margin: 10,
         }}
       >
         {/* left section */}
         <Stack
           sx={{
-            display: 'flex',
-            flexDirection: 'col',
+            display: "flex",
+            flexDirection: "col",
+            alignItems: "center",
             // width: '15%',
           }}
           className='left-stack'
@@ -306,6 +236,12 @@ const InvestmentCalculator = () => {
             // max={100}
             // min={0}
             // inputProps={{ max: 100, min: 0 }}
+
+            // inputProps={{
+            //   placeholder: "0%",
+            //   // defaultValue: "8%",
+            // }}
+            placeholder='0'
           />
           <Typography className='capital heading-text'>
             Contributions
@@ -326,24 +262,26 @@ const InvestmentCalculator = () => {
             onChange={(e) => handleContributionChange(e)}
             // fullWidth
             margin='normal'
+            placeholder='0'
           />
           <RadioGroup
             value={contributionFrequency}
             onChange={(e) => setContributionFrequency(e.target.value)}
             row
             className='radio-group'
+            // sx={{ alignItems: "center" }}
           >
             <Box
               sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gridTemplateRows: 'repeat(2, 1fr)',
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gridTemplateRows: "repeat(2, 1fr)",
                 gap: 2,
                 p: 4,
               }}
             >
               <FormControlLabel
-                value='annual'
+                value='yearly'
                 control={<Radio />}
                 label='Annual'
               />
@@ -405,20 +343,21 @@ const InvestmentCalculator = () => {
             // fullWidth
             margin='normal'
             inputProps={{
-              maxLength: 10,
-              placeholder: '8%',
-              defaultValue: '8%',
+              // maxLength: 10,
+              placeholder: "0%",
+              // defaultValue: "8%",
             }}
           />
         </Stack>
 
         {/* right section */}
         <Stack sx={{ marginLeft: 10 }} className='right-stack'>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          {/* <Box sx={{ display: "flex", justifyContent: "space-between" }}> */}
+          <Box>
             <Typography
               variant='h6'
               // className='capital text-center heading-text'
-              className='capital heading-text'
+              className='capital heading-text text-center'
               gutterBottom
             >
               Potential Future Balance in {yearsToGrow} years
@@ -429,20 +368,20 @@ const InvestmentCalculator = () => {
               gutterBottom
               fontWeight='bold'
             >
-              ${calculateFutureBalance().toLocaleString('en-US')}
+              ${calculateFutureBalance().toLocaleString("en-US")}
             </Typography>
           </Box>
 
           <BarChart
             width={800}
             height={400}
-            data={generateChartData()}
+            data={generateChartData}
             // {...barChartOptions}
           >
             {/* <CartesianGrid vertical={false} stroke='green' /> */}
             <XAxis dataKey='year' />
             {/* the graph should move to the right if the number gets huge on the Y axis. handle this. */}
-            <YAxis />
+            <YAxis tickFormatter={formatAxisText} />
             <Tooltip />
             <Legend />
             <Bar dataKey='amount' stackId='a' fill='#293A60' />
