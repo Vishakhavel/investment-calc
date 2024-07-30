@@ -28,16 +28,17 @@ const SwipeTextField = ({
   symbol = "",
   max = 100,
   min = 0,
+  type = "text",
   placeholder,
   ...props
 }) => {
   console.log({ max, min });
   return (
     <CustomTextField
-      type='number'
+      type={type}
       InputProps={{
         startAdornment: (
-          <InputAdornment position='start'>{symbol}</InputAdornment>
+          <InputAdornment position="start">{symbol}</InputAdornment>
         ),
         min: 0,
         max: 100,
@@ -45,10 +46,8 @@ const SwipeTextField = ({
       inputProps={{
         placeholder: placeholder,
       }}
-      variant='outlined'
-      // inputProps={{ max: 100, min: 0 }}
+      variant="outlined"
       {...props}
-      // inputProps={{ min: 0, max: 100 }}
     />
   );
 };

@@ -1,11 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react";
-// import { style } from './style';
-// import styled from 'styled-components';
+import React, { useState, useMemo } from "react";
 import "./InvestmentCalc.css";
 import swipeSwipeImage from "../assets/swipeswipe_logo.png";
 
 import {
-  TextField,
   Radio,
   RadioGroup,
   FormControlLabel,
@@ -14,20 +11,11 @@ import {
   Box,
   Stack,
 } from "@mui/material";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from "recharts";
 import { styled } from "@mui/system";
-import { grey } from "@mui/material/colors";
-import { ThemeProvider } from "@mui/material/styles";
 
 import SwipeTextField from "./atom/SwipeTextField";
+import CustomGraphTooltip from "./atom/CustomGraphTooltip";
 
 const CustomSlider = styled(Slider)({
   height: 8,
@@ -61,15 +49,20 @@ const CustomSlider = styled(Slider)({
 });
 
 const InvestmentCalculator = () => {
-  const [initialDeposit, setInitialDeposit] = useState(3000);
-  const [contributions, setContributions] = useState(200);
+  // const [initialDeposit, setInitialDeposit] = useState(3000);
+  const [initialDeposit, setInitialDeposit] = useState("100");
+  // const [contributions, setContributions] = useState(200);
+  const [contributions, setContributions] = useState("200");
   const [contributionFrequency, setContributionFrequency] = useState("weekly");
   const [yearsToGrow, setYearsToGrow] = useState(30);
   const [annualReturn, setAnnualReturn] = useState(8);
 
-  let adjustedContributions = contributions === "" ? 0 : Number(contributions),
-    adjustedInitialDeposit = initialDeposit === "" ? 0 : Number(initialDeposit),
-    adjustedAnnualReturn = initialDeposit === "" ? 0 : Number(annualReturn);
+  let adjustedContributions =
+      contributions === "" ? 0 : parsePlaceholderNumber(contributions),
+    adjustedInitialDeposit =
+      initialDeposit === "" ? 0 : parsePlaceholderNumber(initialDeposit),
+    adjustedAnnualReturn =
+      annualReturn === "" ? 0 : parsePlaceholderNumber(annualReturn);
 
   const calculateFutureBalance = () => {
     const n =
@@ -84,16 +77,33 @@ const InvestmentCalculator = () => {
     for (let i = 1; i <= t; i++) {
       futureBalance += adjustedContributions * Math.pow(1 + r, t - i);
     }
-    console.log({
-      futureBalance,
-      adjustedContributions,
-      adjustedInitialDeposit,
-    });
     return Math.floor(futureBalance);
   };
 
-  const generateChartData = useMemo(() => {
+  const formatPlaceholderNumber = (num) => {
+    if (!num) return "";
+    const parts = num.toString().split(".");
+    parts[0] = parts[0].split(",").join("");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+  };
+
+  // function to parse and return a numeric value of the comma seperated placeholder value
+  function parsePlaceholderNumber(formattedNum) {
+    if (typeof formattedNum === "number") return formattedNum;
+    else if (!formattedNum) return 0;
+
+    console.log({ formattedNum });
+
+    return parseFloat(formattedNum.replace(/,/g, ""));
+  }
+
+  const chartData = useMemo(() => {
     const rate = annualReturn / 100;
+    const contributionNumber = parsePlaceholderNumber(contributions);
+    const initialDepositNumber = parsePlaceholderNumber(initialDeposit);
+
+    console.log({ initialDepositNumber, contributionNumber });
 
     let n;
     switch (contributionFrequency) {
@@ -116,35 +126,30 @@ const InvestmentCalculator = () => {
     }
 
     const yearlyAmounts = [];
-    let totalAmount = initialDeposit;
-    let previousAmount = initialDeposit;
+    let totalAmount = initialDepositNumber;
+    let principalAndContributions = initialDepositNumber;
+    let previousAmount = initialDepositNumber;
 
     const currentYear = new Date().getFullYear();
 
-    let checkData = [];
-
     for (let year = 1; year <= yearsToGrow; year++) {
       for (let i = 1; i <= n; i++) {
-        totalAmount = totalAmount * (1 + rate / n) + Number(contributions);
+        // totalAmount = totalAmount * (1 + rate / n) + Number(contributions);
+        totalAmount = totalAmount * (1 + rate / n) + contributionNumber;
+        // principalAndContributions just stores the initialDeposit and the subsequent contributions
+        principalAndContributions += contributionNumber;
       }
       const interestEarned = totalAmount - previousAmount - contributions * n;
-      checkData.push({
-        interestEarned,
-        totalAmount,
-        previousAmount,
-        contributions,
-      });
-      console.log();
+
       yearlyAmounts.push({
-        // year: year,
         year: Number(currentYear) + year,
         amount: Math.floor(totalAmount),
-        interest: Math.floor(interestEarned),
+        // investment and return are the 2 fields to be used in the chart
+        Return: Math.floor(interestEarned),
+        Invested: Math.floor(principalAndContributions),
       });
       previousAmount = totalAmount;
     }
-
-    console.log({ checkData });
 
     return yearlyAmounts;
   }, [
@@ -155,11 +160,10 @@ const InvestmentCalculator = () => {
     annualReturn,
   ]);
 
-  console.log("chart data", generateChartData);
-
   const handleInitialDepositChange = (e) => {
-    if (Number(e.target.value) <= 999999) {
-      setInitialDeposit(e.target.value);
+    if (parsePlaceholderNumber(e.target.value) <= 999999) {
+      console.log("number valeu", Number(e.target.value));
+      setInitialDeposit(formatPlaceholderNumber(e.target.value));
     }
   };
   const handleAnnualReturn = (e) => {
@@ -169,7 +173,7 @@ const InvestmentCalculator = () => {
   };
   const handleContributionChange = (e) => {
     if (Number(e.target.value) <= 99999) {
-      setContributions(e.target.value);
+      setContributions(formatPlaceholderNumber(e.target.value));
     }
   };
 
@@ -185,11 +189,10 @@ const InvestmentCalculator = () => {
   };
 
   return (
-    // <StyledDiv>
-    <Box sx={{ p: 4 }} className='main-box'>
+    <Box sx={{ p: 4 }} className="main-box">
       <Typography
-        className='text-centre main-heading'
-        variant='h3'
+        className="text-centre main-heading"
+        variant="h3"
         sx={{
           display: "flex",
           justifyContent: "center",
@@ -218,58 +221,38 @@ const InvestmentCalculator = () => {
             alignItems: "center",
             // width: '15%',
           }}
-          className='left-stack'
+          className="left-stack"
         >
-          <Typography className='capital heading-text'>
+          <Typography className="capital heading-text">
             Initial Investment Deposit
           </Typography>
           <SwipeTextField
-            className='field-input'
-            symbol='$'
-            type='number'
+            className="field-input"
+            symbol="$"
+            // type="number"
             value={initialDeposit}
-            // onChange={(e) => setInitialDeposit(e.target.value)}
-            // onChange={(e) => handleInitialDepositChange(e)}
             onChange={(e) => handleInitialDepositChange(e)}
-            // fullWidth
-            margin='normal'
-            // max={100}
-            // min={0}
-            // inputProps={{ max: 100, min: 0 }}
-
-            // inputProps={{
-            //   placeholder: "0%",
-            //   // defaultValue: "8%",
-            // }}
-            placeholder='0'
+            margin="normal"
+            placeholder="0"
           />
-          <Typography className='capital heading-text'>
+          <Typography className="capital heading-text">
             Contributions
           </Typography>
-          {/* <TextField
-            type='number'
-            value={contributions}
-            onChange={(e) => setContributions(e.target.value)}
-            // fullWidth
-            margin='normal'
-          /> */}
+
           <SwipeTextField
-            className='field-input'
-            symbol='$'
-            type='number'
+            className="field-input"
+            symbol="$"
+            // type="number"
             value={contributions}
-            // onChange={(e) => setContributions(e.target.value)}
             onChange={(e) => handleContributionChange(e)}
-            // fullWidth
-            margin='normal'
-            placeholder='0'
+            margin="normal"
+            placeholder="0"
           />
           <RadioGroup
             value={contributionFrequency}
             onChange={(e) => setContributionFrequency(e.target.value)}
             row
-            className='radio-group'
-            // sx={{ alignItems: "center" }}
+            className="radio-group"
           >
             <Box
               sx={{
@@ -281,118 +264,93 @@ const InvestmentCalculator = () => {
               }}
             >
               <FormControlLabel
-                value='yearly'
+                value="yearly"
                 control={<Radio />}
-                label='Annual'
+                label="Annual"
               />
               <FormControlLabel
-                value='monthly'
+                value="monthly"
                 control={<Radio />}
-                label='Monthly'
+                label="Monthly"
               />
               <FormControlLabel
-                value='weekly'
+                value="weekly"
                 control={<Radio />}
-                label='Weekly'
+                label="Weekly"
               />
               <FormControlLabel
-                value='daily'
+                value="daily"
                 control={<Radio />}
-                label='Daily'
+                label="Daily"
               />
             </Box>
           </RadioGroup>
-          <Typography gutterBottom className='heading-text capital'>
+          <Typography gutterBottom className="heading-text capital">
             {yearsToGrow} Years to Grow
           </Typography>
 
           <CustomSlider
             value={yearsToGrow}
             onChange={(e, newValue) => setYearsToGrow(newValue)}
-            valueLabelDisplay='auto'
+            valueLabelDisplay="auto"
             step={1}
             min={1}
             max={50}
-            size='small'
-            color='secondary'
+            size="small"
+            color="secondary"
           />
-          <Typography className='capital heading-text'>
+          <Typography className="capital heading-text">
             Average Annual Return
           </Typography>
-          {/* <TextField
-            type='number'
-            maxLength='2'
-            value={annualReturn}
-            onChange={(e) => setAnnualReturn(e.target.value)}
-            // fullWidth
-            margin='normal'
-            inputProps={{
-              maxLength: 10,
-              placeholder: '8%',
-              defaultValue: '8%',
-            }}
-          /> */}
+
           <SwipeTextField
             // symbol
-            className='field-input'
-            type='number'
-            maxLength='2'
+            className="field-input"
+            type="number"
+            maxLength="2"
             value={annualReturn}
-            // onChange={(e) => setAnnualReturn(e.target.value)}
             onChange={(e) => handleAnnualReturn(e)}
-            // fullWidth
-            margin='normal'
+            margin="normal"
             inputProps={{
-              // maxLength: 10,
               placeholder: "0%",
-              // defaultValue: "8%",
             }}
           />
         </Stack>
 
         {/* right section */}
-        <Stack sx={{ marginLeft: 10 }} className='right-stack'>
-          {/* <Box sx={{ display: "flex", justifyContent: "space-between" }}> */}
+        <Stack sx={{ marginLeft: 10 }} className="right-stack">
           <Box>
             <Typography
-              variant='h6'
-              // className='capital text-center heading-text'
-              className='capital heading-text text-center'
+              variant="h6"
+              className="capital heading-text text-center"
               gutterBottom
             >
               Potential Future Balance in {yearsToGrow} years
             </Typography>
             <Typography
-              variant='h3'
-              className='capital text-center heading-text'
+              variant="h3"
+              className="capital text-center heading-text"
               gutterBottom
-              fontWeight='bold'
+              fontWeight="bold"
             >
               ${calculateFutureBalance().toLocaleString("en-US")}
             </Typography>
           </Box>
 
-          <BarChart
-            width={800}
-            height={400}
-            data={generateChartData}
-            // {...barChartOptions}
-          >
-            {/* <CartesianGrid vertical={false} stroke='green' /> */}
-            <XAxis dataKey='year' />
-            {/* the graph should move to the right if the number gets huge on the Y axis. handle this. */}
+          <BarChart width={800} height={400} data={chartData}>
+            <XAxis dataKey="year" />
             <YAxis tickFormatter={formatAxisText} />
-            <Tooltip />
+            <Tooltip content={<CustomGraphTooltip chartData={chartData} />} />
             <Legend />
-            <Bar dataKey='amount' stackId='a' fill='#293A60' />
-            <Bar dataKey='interest' stackId='a' fill='#FBC950' />
+            {/* <Bar dataKey="amount" stackId="a" fill="#293A60" /> */}
+            <Bar dataKey="Invested" stackId="a" fill="#293A60" />
+            <Bar dataKey="Return" stackId="a" fill="#FBC950" />
           </BarChart>
         </Stack>
       </Box>
 
       {/* end of the left stack */}
     </Box>
-    // </StyledDiv>
   );
 };
 
