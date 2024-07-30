@@ -198,6 +198,7 @@ const InvestmentCalculator = () => {
           justifyContent: "center",
           fontFamily: "Caudex, Arial, sans-serif",
           fontWeight: 700,
+          color: "#293a60",
         }}
         gutterBottom
       >
